@@ -1,0 +1,20 @@
+{% extends 'app/base.html' %} {% block contenido %} {% load static %} {% block css %}
+<link rel="stylesheet" href="{% static 'app/css/commercialize.css' %}"> {% endblock %}
+
+
+<div class="container" style="margin: 25px; padding: 25;">
+    <h2>Registrarse</h2>
+
+    <div class="row" style="margin: 25px">
+        <div>
+            <form action=" " method="post ">
+                {% csrf_token %} {{form}}
+                <button type="submit " value="Ingresar " class="button2 " name="Ingresar ">Registrarse</button>
+            </form>
+            {{mensaje}}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

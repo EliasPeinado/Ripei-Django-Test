@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIPEI (Ripio y Pei-nado)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:ital,wght@0,700;1,400;1,700&family=Open+Sans:ital,wght@0,400;0,700;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.css"> {%load static%} {% block css %} {% endblock %}
+    <link rel="stylesheet" href="{% static 'app/css/estilos.css' %}">
+
+</head>
+
+<body style="background-color: rgb(255, 241, 229);" onload="CriptoAPI()">
+
+    <header id="header" style="background-color: rgb(93, 84, 29);">
+        <img class="menu" src="{% static 'app/img/menuiconwhite.png' %}" alt="menu" id="menu">
+        <div class="contenedor_logo">
+            <a href="{% url 'home' %}">
+                <img class="logo" src="{% static 'app/img/icono.png' %}" alt="logo">
+            </a>
+        </div>
+
+        <div>
+
+            <nav id="nav">
+                {% if user.is_authenticated %}
+                <ul style="margin-left: 70px;">
+                    <li>
+                        <a href="#"> Saldo en cuenta  </a>
+                    </li>
+                    <li>
+                        <a href="#"> BTC: {{user.BTC_Count}} |</a>
+                    </li>
+                    <li>
+                        <a href="#"> XRP: {{user.BTC_Count}} |</a>
+                    </li>
+                    <li>
+                        <a href="#"> Doguecoin: {{user.BTC_Count}} |</a>
+                    </li>
+                    <li>
+                        <a href="#"> USD: {{user.BTC_Count}}   |</a>
+                    </li>
+                </ul>
+                {% endif %}
+                <ul>
+                    <li>
+                        <a href="{% url 'home' %}"> Inicio </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'contacto' %}">Contacto</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'commercialize' %}">Commercialize</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'transferir' %}">Transferir</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'info' %}">Info (Con API)</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li>
+                        <a href="{% url 'logout' %}">Logout</a>
+                    </li>
+                    <li>
+                        <a href="#"> @ {{ user.name }}</a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="{% url 'login' %}">Login</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+        </div>
+
+    </header>
+
+    <div id="contenido">
+
+        <h1>Info sobre nuestras criptomonedas</h1>
+
+    </div>
+
+
+    <footer style="height: 150px;">
+        <div class="logo_footer">
+            <img src="{% static 'app/img/icono.png' %}" alt="logo">
+        </div>
+    </footer>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.min.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="{% static 'app/js/info.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            $('.slider').bxSlider({
+                mode: 'fade', //horizontal, vertical, fade
+                auto: true,
+                pause: 2000
+            });
+        });
+    </script>
+
+</body>
+
+</html>

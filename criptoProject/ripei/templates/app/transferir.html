@@ -1,0 +1,16 @@
+{% extends 'app/base.html' %} {% block contenido %} {% load static %}
+
+<h3>Tranferir a otra persona</h3>
+
+<form action="" method="post">
+    {% csrf_token %} {{form}}
+    <br>
+    <div style="float: right; margin: 15px;">
+
+        <button type="submit" id="btnEnviar" style="float: right;" class="button">Enviar</button>
+    </div>
+    {{post}} {{mensaje}}
+</form>
+
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'app/base.html' %} {% block contenido %} {% load static %} {% block css %}
+<link rel="stylesheet" href="{% static 'app/css/commercialize.css' %}"> {% endblock %}
+<h1>LISTADO DE CRIPTOS</h1>
+
+
+
+<div class="productos">
+
+
+    <div class="producto">
+        {% for c in data %}
+        <div class="contenedor_producto">
+
+            <img src="{% static 'app/img/img_default.jpg' %}" alt="imagen producto">
+            <div class="detalle">
+                <h2>{{c.name}}</h2>
+                <h3>{{c.valor }}</h3>
+                <hr>
+                <a href="{% url 'buySell' %}"><button class="button1 buttonCompra" > comprar </button></a>
+                <a href="{% url 'buySell' %}"><button class="button1 buttonVenta"> Vender </button></a>
+            </div>
+        </div>
+        <br> {% endfor %}
+    </div>
+
+</div>
+
+{%endblock%}
