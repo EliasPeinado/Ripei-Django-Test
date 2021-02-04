@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 from .serializers import CritoSerializer
+import sys
 
 class CritoViewset(viewsets.ModelViewSet):
     queryset = Crito.objects.all()
@@ -14,10 +15,9 @@ class CritoViewset(viewsets.ModelViewSet):
     def get_queryset(self):
         criptos = Crito.objects.all()
  
-        exist = self.request.GET.get('name').exists()
-        if exist:
-            name = self.request.GET.get('name')
-            criptos = criptos.filter(name = name)
+
+        name = self.request.GET.get('name')
+        criptos = criptos.filter(name = name)
         
 
         return criptos
@@ -46,13 +46,9 @@ def contacto (request):
             data['form'] = formulario
 
     return render(request, 'app/contacto.html', data)
-
+#Muestra las Criptomonedas habilitadas para comercializar
 def commercialize (request):
-
-    
     Criptos = Crito.objects.all()
-
-    
     data = {
         'data' :Criptos
     }
@@ -65,16 +61,23 @@ def transferir (request):
     }
     if request.method == 'POST':
 
+        #Modifico el form para poder guardarlo correctamente en la BBDD
         request.POST._mutable = True
         request.POST.pop('csrfmiddlewaretoken')
-        request.POST['emisor_email'] = '' #User.email
-        request.POST['emisor_name'] = '' #User.first_name
+        # request.POST['emisor_email'] = '' #User.email
+        # request.POST['emisor_name'] = '' #User.first_name
         request.POST._mutable = False 
         formulario =  TransferForm(data = request.POST)
 
+        #Si el formulario es valido, llamo a la funcion CoinOperations para que haga la transferencia (comente email_emis porque no esta funcionando el login)
         if formulario.is_valid():
-            function = CoinOperations(moneda= request.POST['moneda'],accion= 0, monto= request.POST['monto'], email= request.POST['receptor_email'])
-            formulario.save()
+            function = CoinOperations(
+                moneda= request.POST['moneda'],
+                accion= 0,
+                monto= request.POST['monto'],
+                email= request.POST['receptor_email'])
+                #, email_emis= User.email)
+            formulario.save() 
             data['mensaje'] = function
 
         else:
@@ -82,62 +85,79 @@ def transferir (request):
             data['mensaje'] = 'ocurrio un error, contacte con soporte!'
     return render(request, 'app/transferir.html', data)
 
-def CoinOperations(moneda, accion, monto, email ):
+#La funcion CoinOperations se encarga las acciones de enviar, comprar o vender criptos o USD
+def CoinOperations(moneda, accion, monto, email, email_emis = 'null' ):
 
     try:    
-        exist = UserProfile.objects.all().filter(email= email).exists()
-        if exist:
+
             crpitos = Crito.objects.all()
             user = UserProfile.objects.all().get(email= email)
-            if int(moneda) == 0:#-------------------------------------------------------------------------------------
-                crpitos.filter(name = 'Bitcoin')
-                crpito = crpitos[0]
-                if crpito*int(monto) < user.USD_Count:
+            if email_emis != 'null':
+                user_emi = UserProfile.objects.all().get(email= email_emis)
+
+            if float(moneda) == 0:#-------------------------------------------------------------------------------------
+                
+                crpito = crpitos.get(name = 'Bitcoin')
+                if float(crpito.valor)*float(monto) < user.USD_Count:
                     if int(accion) == 0:
-                        user.BTC_Count += int(monto) 
+                        user.BTC_Count += float(monto) 
+                        if email_emis != 'null':
+                            user_emi.USD_Count -= float(crpito.valor)*float(monto)
                     else:
-                        user.BTC_Count -= int(monto)
+                        user.BTC_Count -= float(monto)
+                        if email_emis != 'null':
+                            user_emi.USD_Count += float(crpito.valor)*float(monto)
                 else:
                     return 'Dinero insuficiente, compre dolares!'
             elif int(moneda) == 1:#-------------------------------------------------------------------------------------
-                crpitos.filter(name = 'XRP')
-                crpito = crpitos[0]
-                if crpito*int(monto) < user.USD_Count:
+                crpito = crpitos.get(name = 'XRP')
+                if float(crpito.valor)*float(monto) < user.USD_Count:
                     if int(accion) == 0:
-                        user.XRP_Count += int(monto)
+                        user.XRP_Count += float(monto)
+                        if email_emis != 'null':
+                            user_emi.USD_Count -= float(crpito.valor)*float(monto)
                     else:
-                        user.XRP_Count -= int(monto)
+                        user.XRP_Count -= float(monto)
+                        if email_emis != 'null':
+                            user_emi.USD_Count += float(crpito.valor)*float(monto)
                 else:
                     return 'Dinero insuficiente, compre dolares!'
             elif int(moneda) == 2:#-------------------------------------------------------------------------------------
-                crpitos.filter(name = 'Dogecoin')
-                crpito = crpitos[0]
-                if crpito*int(monto) < user.USD_Count:
+                crpito = crpitos.get(name = 'Dogecoin')
+                
+                if float(crpito.valor)*float(monto) < user.USD_Count:
                     if int(accion) == 0:
-                        user.DOGE_Count += int(monto)
+                        user.DOGE_Count += float(monto)
+                        if email_emis != 'null':
+                            user_emi.USD_Count -= float(crpito.valor)*float(monto)
                     else:
-                        user.DOGE_Count -= int(monto)
+                        user.DOGE_Count -= float(monto)
+                        if email_emis != 'null':
+                            user_emi.USD_Count += float(crpito.valor)*float(monto)
                 else:
                     return 'Dinero insuficiente, compre dolares!'
             elif int(moneda) == 3:#-------------------------------------------------------------------------------------
                 if int(accion) == 0:
-                    user.USD_Count += int(monto)
+                    user.USD_Count += float(monto)
                 else:
-                    user.USD_Count -= int(monto)
+                    user.USD_Count -= float(monto)
             user.save()
-            return ('Transferencia enviada con exito!')
-        else:
-            return ('El usuario no existe!')
-    except:    
-         return ('ocurrio un error, contacte con soporte!')
+            return ('Transaccion realizada con exito')
+        
+    except :    
+        e = sys.exc_info()[1]
+        return(  e )
+        # return ()
     
-
+#BuySell se encarga las acciones de comprar y vender criptos o USD
 def buySell (request):
 
     
     data = {
         'form': CommerForm()
     }
+
+    #Modifico el form para poder guardarlo correctamente en la BBDD
     if request.method == 'POST':
         request.POST._mutable = True
         request.POST['email'] = User.email
@@ -145,9 +165,14 @@ def buySell (request):
         request.POST._mutable = False 
         formulario =  CommerForm(data= request.POST)
 
-
+        #Si el formulario es valido, llamo a la funcion CoinOperations para que haga la transferencia
         if formulario.is_valid():
-            CoinOperations(moneda= request.POST['moneda'],accion= request.POST['accion'], monto= request.POST['monto'], email= request.POST['email'])
+            CoinOperations(
+                moneda= request.POST['moneda'],
+                accion= request.POST['accion'],
+                monto= request.POST['monto'],
+                email= request.POST['email'],
+                email_emis= request.POST['email'])
             formulario.save()
             data['mensaje'] = 'Transferencia enviada con exito!'
         else:
@@ -165,6 +190,8 @@ def registro (request):
         request.POST.pop('csrfmiddlewaretoken')
         request.POST._mutable = False 
         formulario =  RegistroForm(data = request.POST)
+
+
         if formulario.is_valid():
             formulario.save()
             data['mensaje'] = 'Registrado con exito'
@@ -172,4 +199,6 @@ def registro (request):
         else:
            data['form'] = formulario
            data['mensaje'] = request.POST.GET
+
+
     return render(request,'app/registro.html', data)
